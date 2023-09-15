@@ -19,5 +19,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = ""
-"Bug Tracker" = ""
+"Homepage" = "https://github.com/bkane2/ulflib-py"
+"Bug Tracker" = "https://github.com/bkane2/ulflib-py/issues"
