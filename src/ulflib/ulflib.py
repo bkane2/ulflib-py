@@ -767,82 +767,7 @@ def phrasal_ulf_type(x):
   return matched if matched else ['unknown']
 
 
-def unknown_p(x):
-  return ['unknown'] == phrasal_ulf_type(x)
-
-
-def postmod_p(x):
-  return pred_p(x) or term_p(x) or adv_p(x) or p_arg_p(x) or unknown_p(x)
-
-
-def postmod_adj_p(x):
-  return p_arg_p(x) or (listp(x) and len(x) == 2 and x[0] == 'to' and verb_p(x[1]))
-
-
-def verb_arg_p(x):
-  return term_p(x) or pred_p(x) or adv_a_p(x) or p_arg_p(x) or phrasal_sent_op_p(x)
-
-
-def verb_or_tensed_verb_p(x):
-  return verb_p(x) or tensed_verb_p(x)
-
-
-def sent_or_sent_mod_p(x):
-  return sent_p(x) or sent_mod_p(x)
-
-
-def sent_or_tensed_sent_p(x):
-  return sent_p(x) or tensed_sent_p(x)
-
-
-def phrasal_sent_op_p(x):
-  """Condition to check if an element is a filtered sentence-level operator.
-  
-  I.e., basically all sentence-level operators that are written within the phrase in the surface form.
-  """
-  return (adv_e_p(x) or adv_s_p(x) or adv_f_p(x)
-          or x in ['not', 'not.adv-e', 'not.adv-s']
-          or ps_p(x)
-          or (listp(x) and len(x) > 1 and lex_ps_p(x[0])))
-
-
-def type_shifter_p(x):
-  return (noun_reifier_p(x)
-          or verb_reifier_p(x)
-          or sent_reifier_p(x)
-          or tensed_sent_reifier_p(x)
-          or mod_n_former_p(x)
-          or mod_a_former_p(x)
-          or advformer_p(x)
-          or detformer_p(x))
-
-
-def prog_marker_p(x):
-  return x == 'prog' or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and x[1] == 'prog')
-
-
-def perf_marker_p(x):
-  return x == 'perf' or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and x[1] == 'perf')
-
-
-def aux_or_head_verb_p(x):
-  return (aux_p(x) or tensed_aux_p(x) or suffix_check(x, 'vp-head')
-          or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and suffix_check(x[1], 'vp-head')))
-
-
-def noun_or_adj_p(x):
-  return noun_p(x) or adj_p(x)
-
-
-def invertible_verb_or_aux_p(x):
-  return lex_invertible_verb_p(x) or aux_p(x)
-
-
-PHRASE_PREDS = ([x[0] for x in TYPE_ID_FNS if x[0] not in LEX_PREDS]
-                + [unknown_p, postmod_p, postmod_adj_p, verb_arg_p, verb_or_tensed_verb_p,
-                   sent_or_sent_mod_p, sent_or_tensed_sent_p, phrasal_sent_op_p,
-                   type_shifter_p, prog_marker_p, perf_marker_p, aux_or_head_verb_p,
-                   noun_or_adj_p, invertible_verb_or_aux_p])
+PHRASE_PREDS = ([x[0] for x in TYPE_ID_FNS if x[0] not in LEX_PREDS])
 
 for pred in PHRASE_PREDS:
   tt.register_pred(pred, include_neg=True)
@@ -919,12 +844,97 @@ def pasv_lex_verb_p(x):
   return listp(x) and len(x) == 2 and x[0] in PASSIVIZER and lex_verb_p(x[1])
 
 
+def unknown_p(x):
+  return ['unknown'] == phrasal_ulf_type(x)
+
+
+def postmod_p(x):
+  return pred_p(x) or term_p(x) or adv_p(x) or p_arg_p(x) or unknown_p(x)
+
+
+def postmod_adj_p(x):
+  return p_arg_p(x) or (listp(x) and len(x) == 2 and x[0] == 'to' and verb_p(x[1]))
+
+
+def verb_arg_p(x):
+  return term_p(x) or pred_p(x) or adv_a_p(x) or p_arg_p(x) or phrasal_sent_op_p(x)
+
+
+def verb_or_tensed_verb_p(x):
+  return verb_p(x) or tensed_verb_p(x)
+
+
+def sent_or_sent_mod_p(x):
+  return sent_p(x) or sent_mod_p(x)
+
+
+def sent_or_tensed_sent_p(x):
+  return sent_p(x) or tensed_sent_p(x)
+
+
+def phrasal_sent_op_p(x):
+  """Condition to check if an element is a filtered sentence-level operator.
+  
+  I.e., basically all sentence-level operators that are written within the phrase in the surface form.
+  """
+  return (adv_e_p(x) or adv_s_p(x) or adv_f_p(x)
+          or x in ['not', 'not.adv-e', 'not.adv-s']
+          or ps_p(x)
+          or (listp(x) and len(x) > 1 and lex_ps_p(x[0])))
+
+
+def type_shifter_p(x):
+  return (noun_reifier_p(x)
+          or verb_reifier_p(x)
+          or sent_reifier_p(x)
+          or tensed_sent_reifier_p(x)
+          or mod_n_former_p(x)
+          or mod_a_former_p(x)
+          or advformer_p(x)
+          or detformer_p(x))
+
+
+def prog_marker_p(x):
+  return x == 'prog' or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and x[1] == 'prog')
+
+
+def perf_marker_p(x):
+  return x == 'perf' or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and x[1] == 'perf')
+
+
+def aux_or_head_verb_p(x):
+  return (aux_p(x) or tensed_aux_p(x) or suffix_check(x, 'vp-head')
+          or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and suffix_check(x[1], 'vp-head')))
+
+
+def noun_or_adj_p(x):
+  return noun_p(x) or adj_p(x)
+
+
+def invertible_verb_or_aux_p(x):
+  return lex_invertible_verb_p(x) or aux_p(x)
+
+
 GEN_PREDS = [
   plur_term_p,
   plur_partitive_p,
   plur_noun_p,
   plur_lex_noun_p,
-  pasv_lex_verb_p
+  pasv_lex_verb_p,
+  unknown_p,
+  postmod_p,
+  postmod_adj_p,
+  verb_arg_p,
+  verb_or_tensed_verb_p,
+  sent_or_sent_mod_p,
+  sent_or_tensed_sent_p,
+  phrasal_sent_op_p,
+  type_shifter_p,
+  prog_marker_p,
+  perf_marker_p,
+  aux_or_head_verb_p,
+  noun_or_adj_p,
+  invertible_verb_or_aux_p
 ]
 
 for pred in GEN_PREDS:
