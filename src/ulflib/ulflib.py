@@ -1,6 +1,7 @@
 """ULF library functions."""
 
 from transduction import tt
+from memoization import cached
 
 from ulflib.util import atom, listp, cons, subst, rec_find_if
 
@@ -55,171 +56,225 @@ KEYWORDS = OPERATORS + MACROS + HOLE_VARS
 SURFACE_KEYWORDS = ['that', 'not', 'and', 'or', 'to', 'most', 'some', 'all', 'every', 'whether', 'if']
 
 
+@cached
 def lex_noun_p(x):
   return suffix_check(x, 'N')
 
+@cached
 def lex_rel_noun_p(x):
   if not atom(x):
     return False
   word, suffix = split_by_suffix(x)
   return lex_noun_p(x) and len(word) > 3 and word[-3:] == '-of'
 
+@cached
 def lex_function_p(x):
   return suffix_check(x, 'F')
 
+@cached
 def lex_pronoun_p(x):
   return suffix_check(x, 'PRO')
 
+@cached
 def lex_verb_p(x):
   return suffix_check(x, 'V')
 
+@cached
 def lex_adjective_p(x):
   return suffix_check(x, 'A')
 
+@cached
 def lex_p_p(x):
   return suffix_check(x, 'P')
 
+@cached
 def lex_p_arg_p(x):
   return suffix_check(x, 'P-ARG')
 
+@cached
 def lex_ps_p(x):
   return suffix_check(x, 'PS')
 
+@cached
 def lex_pq_p(x):
   return suffix_check(x, 'PQ')
 
+@cached
 def lex_prep_p(x):
   return lex_p_p(x) or lex_ps_p(x) or lex_pq_p(x)
 
+@cached
 def lex_pp_p(x):
   return suffix_check(x, 'PP')
 
+@cached
 def lex_mod_a_p(x):
   return suffix_check(x, 'MOD-A')
 
+@cached
 def lex_mod_n_p(x):
   return suffix_check(x, 'MOD-N') or x in PLURALIZER
 
+@cached
 def lex_mod_p(x):
   return lex_mod_a_p(x) or lex_mod_n_p(x)
 
+@cached
 def lex_rel_p(x):
   return suffix_check(x, 'REL')
 
+@cached
 def lex_det_p(x):
   return suffix_check(x, 'D')
 
+@cached
 def lex_coord_p(x):
   return suffix_check(x, 'CC') or x in COORDINATOR
 
+@cached
 def lex_aux_s_p(x):
   return suffix_check(x, 'AUX-S')
 
+@cached
 def lex_aux_v_p(x):
   return suffix_check(x, 'AUX-V')
 
+@cached
 def lex_aux_p(x):
   return lex_aux_s_p(x) or lex_aux_v_p(x)
 
+@cached
 def lex_number_p(x):
   return isinstance(x, int) or (isinstance(x, str) and x.isdigit())
 
+@cached
 def lex_name_p(x):
   return suffix_check(x, 'NAME') or (not has_suffix(x) and not x in KEYWORDS)
 
+@cached
 def lex_adv_a_p(x):
   return suffix_check(x, 'ADV-A')
 
+@cached
 def lex_adv_s_p(x):
   return suffix_check(x, 'ADV-S') or x in NEGATION
 
+@cached
 def lex_adv_e_p(x):
   return suffix_check(x, 'ADV-E')
 
+@cached
 def lex_adv_f_p(x):
   return suffix_check(x, 'ADV-F')
 
+@cached
 def lex_adv_formula_p(x):
   return lex_adv_s_p(x) or lex_adv_e_p(x) or lex_adv_f_p(x)
 
+@cached
 def lex_adv_p(x):
   return lex_adv_a_p(x) or lex_adv_formula_p(x)
 
+@cached
 def lex_x_p(x):
   return suffix_check(x, 'X')
 
+@cached
 def lex_yn_p(x):
   return suffix_check(x, 'YN')
 
+@cached
 def lex_gr_p(x):
   return suffix_check(x, 'GR')
 
+@cached
 def lex_sent_p(x):
   return suffix_check(x, 'SENT')
 
+@cached
 def lex_tense_p(x):
   return x in TENSE
 
+@cached
 def lex_aspect_p(x):
   return x in ASPECT
 
+@cached
 def lex_detformer_p(x):
   return x in DETFORMER
 
+@cached
 def litstring_p(x):
   return isinstance(x, str) and len(x) >= 3 and x[0] == '"' and x[-1] == '"'
 
+@cached
 def lex_equal_p(x):
   return x == '='
 
+@cached
 def lex_set_of_p(x):
   return x == 'set-of'
 
+@cached
 def lex_noun_postmod_macro_p(x):
   return x in NOUN_POSTMOD_MACRO
 
+@cached
 def lex_np_postmod_macro_p(x):
   return x in NP_POSTMOD_MACRO
 
+@cached
 def lex_noun_or_np_postmod_macro_p(x):
   return x in (NOUN_POSTMOD_MACRO + NP_POSTMOD_MACRO)
 
+@cached
 def lex_macro_p(x):
   return x in MACROS
 
+@cached
 def lex_macro_rel_hole_p(x):
   return x in REL_VAR
 
+@cached
 def lex_macro_sub_hole_p(x):
   return x in SUB_VAR
 
+@cached
 def lex_macro_hole_p(x):
   return x in HOLE_VARS
 
+@cached
 def lex_hole_variable_p(x):
   return isinstance(x, str) and len(x) > 1 and x[0] == '*'
 
+@cached
 def lex_verbaux_p(x):
   return lex_verb_p(x) or aux_p(x)
 
+@cached
 def lex_pasv_p(x):
   return x in PASSIVIZER
 
+@cached
 def lex_possessive_s_p(x):
   return x == "'s"
 
+@cached
 def lex_invertible_verb_p(x):
   return x in ['make.v', 'have.v']
 
+@cached
 def lex_comma_p(x):
   return x == ','
 
+@cached
 def lex_elided_p(x):
   if not atom(x):
     return False
   word, suffix = split_by_suffix(x)
   return (word[0]=='{' and word[-1]=='}') or (word[0]=='{' and x[-1]=='}')
 
+@cached
 def surface_token_p(x):
   return (not atom(x)
           or (has_suffix(x) and not lex_elided_p(x) and not lex_hole_variable_p(x))
@@ -598,114 +653,151 @@ def contains_relativizer(x):
   return rec(x)
 
 
+@cached
 def noun_p(x):
   return match_any(x, TT_NOUN)
 
+@cached
 def adj_p(x):
   return match_any(x, TT_ADJ)
 
+@cached
 def adj_premod_p(x):
   return match_any(x, TT_ADJ_PREMOD)
 
+@cached
 def adj_postmod_p(x):
   return match_any(x, TT_ADJ_POSTMOD)
 
+@cached
 def adv_a_p(x):
   return match_any(x, TT_ADV_A)
 
+@cached
 def adv_e_p(x):
   return match_any(x, TT_ADV_E)
 
+@cached
 def adv_s_p(x):
   return match_any(x, TT_ADV_S)
 
+@cached
 def adv_f_p(x):
   return match_any(x, TT_ADV_F)
 
+@cached
 def adv_p(x):
   return adv_a_p(x) or adv_e_p(x) or adv_s_p(x) or adv_f_p(x)
 
+@cached
 def mod_a_p(x):
   return match_any(x, TT_MOD_A)
 
+@cached
 def mod_n_p(x):
   return match_any(x, TT_MOD_N)
 
+@cached
 def mod_a_former_p(x):
   return x in ['mod-a']
 
+@cached
 def mod_n_former_p(x):
   return x in ['mod-n']
 
+@cached
 def pp_p(x):
   return match_any(x, TT_PP)
 
+@cached
 def term_p(x):
   return match_any(x, TT_TERM)
 
+@cached
 def verb_p(x):
   return match_any(x, TT_VERB)
 
+@cached
 def pred_p(x):
   return match_any(x, TT_PRED)
 
+@cached
 def det_p(x):
   return match_any(x, TT_DET)
 
+@cached
 def aux_p(x):
   return match_any(x, TT_AUX)
 
+@cached
 def tensed_aux_p(x):
   return match_any(x, TT_TENSED_AUX)
 
+@cached
 def tensed_verb_p(x):
   return match_any(x, TT_TENSED_VERB)
 
+@cached
 def sent_p(x):
   return match_any(x, TT_SENT)
 
+@cached
 def tensed_sent_p(x):
   return match_any(x, TT_TENSED_SENT)
 
+@cached
 def sent_punct_p(x):
   return x in PUNCT or x in [[p] for p in PUNCT]
 
+@cached
 def sent_mod_p(x):
   return match_any(x, TT_SENT_MOD)
 
+@cached
 def ps_p(x):
   return match_any(x, TT_PS)
 
+@cached
 def noun_reifier_p(x):
   return x in NOUN_REIFIER
 
+@cached
 def verb_reifier_p(x):
   return x in VERB_REIFIER
 
+@cached
 def sent_reifier_p(x):
   return x in SENT_REIFIER
 
+@cached
 def tensed_sent_reifier_p(x):
   return x in TENSED_SENT_REIFIER
 
+@cached
 def advformer_p(x):
   return x in ADVFORMER
 
+@cached
 def detformer_p(x):
   return x in DETFORMER
 
+@cached
 def modformer_p(x):
   return x in MODFORMER
 
+@cached
 def preposs_macro_p(x):
   return match_any(x, TT_PREPOSS_MACRO)
 
+@cached
 def relativized_sent_p(x):
   return tensed_sent_p(x) and contains_relativizer(x)
 
+@cached
 def p_arg_p(x):
   return match_any(x, TT_P_ARG)
 
+@cached
 def voc_p(x):
   return match_any(x, TT_VOC)
 
@@ -788,6 +880,7 @@ PLUR_PRONOUNS = [
 PLUR_DETS = ['these.d', 'those.d', 'both.d', 'few.d', 'many.d', 'several.d']
 
 
+@cached
 def plur_term_p(x):
   """Return True if the argument is a plural term.
 
@@ -821,10 +914,12 @@ def plur_term_p(x):
     return False
   
 
+@cached
 def plur_partitive_p(x):
   return listp(x) and len(x) == 2 and lex_p_p(x[0]) and plur_term_p(x[1])
 
 
+@cached
 def plur_noun_p(x):
   """True if `x` is a plural noun phrase, i.e., if the NP head is plural."""
   if listp(x) and len(x) == 2 and x[0] == 'plur' and noun_p(x[1]):
@@ -834,44 +929,54 @@ def plur_noun_p(x):
     return plur_lex_noun_p(hn)
   
 
+@cached
 def plur_lex_noun_p(x):
   """True if `x` is of the form (plur <lexical noun>)."""
   return listp(x) and len(x) == 2 and x[0] == 'plur' and lex_noun_p(x[1])
 
 
+@cached
 def pasv_lex_verb_p(x):
   """True if arg is of the form (pasv <lexical verb>); False otherwise."""
   return listp(x) and len(x) == 2 and x[0] in PASSIVIZER and lex_verb_p(x[1])
 
 
+@cached
 def unknown_p(x):
   return ['unknown'] == phrasal_ulf_type(x)
 
 
+@cached
 def postmod_p(x):
   return pred_p(x) or term_p(x) or adv_p(x) or p_arg_p(x) or unknown_p(x)
 
 
+@cached
 def postmod_adj_p(x):
   return p_arg_p(x) or (listp(x) and len(x) == 2 and x[0] == 'to' and verb_p(x[1]))
 
 
+@cached
 def verb_arg_p(x):
   return term_p(x) or pred_p(x) or adv_a_p(x) or p_arg_p(x) or phrasal_sent_op_p(x)
 
 
+@cached
 def verb_or_tensed_verb_p(x):
   return verb_p(x) or tensed_verb_p(x)
 
 
+@cached
 def sent_or_sent_mod_p(x):
   return sent_p(x) or sent_mod_p(x)
 
 
+@cached
 def sent_or_tensed_sent_p(x):
   return sent_p(x) or tensed_sent_p(x)
 
 
+@cached
 def phrasal_sent_op_p(x):
   """Condition to check if an element is a filtered sentence-level operator.
   
@@ -883,6 +988,7 @@ def phrasal_sent_op_p(x):
           or (listp(x) and len(x) > 1 and lex_ps_p(x[0])))
 
 
+@cached
 def type_shifter_p(x):
   return (noun_reifier_p(x)
           or verb_reifier_p(x)
@@ -894,23 +1000,28 @@ def type_shifter_p(x):
           or detformer_p(x))
 
 
+@cached
 def prog_marker_p(x):
   return x == 'prog' or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and x[1] == 'prog')
 
 
+@cached
 def perf_marker_p(x):
   return x == 'perf' or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and x[1] == 'perf')
 
 
+@cached
 def aux_or_head_verb_p(x):
   return (aux_p(x) or tensed_aux_p(x) or suffix_check(x, 'vp-head')
           or (listp(x) and len(x) == 2 and lex_tense_p(x[0]) and suffix_check(x[1], 'vp-head')))
 
 
+@cached
 def noun_or_adj_p(x):
   return noun_p(x) or adj_p(x)
 
 
+@cached
 def invertible_verb_or_aux_p(x):
   return lex_invertible_verb_p(x) or aux_p(x)
 
@@ -1242,6 +1353,7 @@ def add_suffix(word, suffix):
   return f'{word}.{suffix}'
 
 
+@cached
 def suffix_check(x, suffix):
   """Check if a symbol has the given suffix."""
   if not isinstance(x, str):

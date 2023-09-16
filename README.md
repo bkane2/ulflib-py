@@ -7,6 +7,7 @@ Additional information can be found at the [ULF project page](https://www.cs.roc
 ## Dependencies
 
 * [transduction](https://pypi.org/project/transduction/)
+* [memoization](https://pypi.org/project/memoization/)
 
 ## Summary
 
