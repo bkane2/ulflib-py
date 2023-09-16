@@ -505,6 +505,9 @@ TT_TERM = [
   ['!det-p', '+expr'],
   # Internal plurality representation
   ['plur-term', '!term-p'],
+  # Rather than building a whole set of types for versions with a hole
+  # contained, just check it dynamically
+  '!lex-hole-variable-p'
 ]
 
 TT_VERB = [
@@ -527,9 +530,13 @@ TT_PRED = [
   '!pp-p',
   ['!lex-rel-p', '!pred-p'],
   '!relativized-sent-p',
+  ['sub', '!lex-rel-p', '!tensed-sent-p'],
+  ['sub', '*lex-rel-p', '!tensed-sent-p'],
   # Fall back analysis
   ['!lex-rel-p', '!expr'],
-  ['!phrasal-sent-op-p', '!pred-p']
+  ['!phrasal-sent-op-p', '!pred-p'],
+  ['sub', '!lex-rel-p', '!expr'],
+  ['sub', '*lex-rel-p', '!expr']
 ]
 
 TT_AUX = [
@@ -571,6 +578,8 @@ TT_SENT = [
   ['?sent-mod-p', '!sent-p', '+sent-or-sent-mod-p'],
   ['!sent-mod-p', '!sent-p'],
   '!lex-x-p',
+  # Term substitution
+  ['sub', '!term-p', '!sent-p']
 ]
 
 TT_TENSED_SENT = [
@@ -604,7 +613,9 @@ TT_TENSED_SENT = [
   '!lex-yn-p',
   ['gr', '!expr'],
   # Implicit sentence marked by single extension
-  '!lex-sent-p'
+  '!lex-sent-p',
+  # Term substitution
+  ['sub', '!term-p', '!tensed-sent-p']
 ]
   
 TT_SENT_MOD = [
