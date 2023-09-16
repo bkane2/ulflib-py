@@ -37,7 +37,7 @@ OPERATORS = (TENSE
              + PASSIVIZER
              + REIFIER
              + PUNCT
-             + ['nmod', 'amod', 'set-of', "'s", 'poss-by', '=', 'ds', 'pu', 'most-n', 'poss-ques', 'poss-ans'])
+             + ['nmod', 'amod', 'set-of', "'s", 'poss-by', '=', 'ds', 'pu', 'most-n', 'poss-ques', 'poss-ans', 'plur-term'])
 
 NOUN_POSTMOD_MACRO = ['n+preds', 'n+post']
 NP_POSTMOD_MACRO = ['np+preds']
