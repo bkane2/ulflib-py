@@ -41,7 +41,7 @@ OPERATORS = (TENSE
 
 NOUN_POSTMOD_MACRO = ['n+preds', 'n+post']
 NP_POSTMOD_MACRO = ['np+preds']
-VOC_MACRO = ['voc', 'voc-O']
+VOC_MACRO = ['voc', 'voc-o']
 SUB_MACRO = ['sub', 'rep', 'qt-attr']
 MACROS = (NOUN_POSTMOD_MACRO
           + NP_POSTMOD_MACRO
