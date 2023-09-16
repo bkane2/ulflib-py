@@ -149,7 +149,7 @@ def lex_number_p(x):
 
 @cached
 def lex_name_p(x):
-  return suffix_check(x, 'NAME') or (not has_suffix(x) and not x in KEYWORDS)
+  return suffix_check(x, 'NAME') or (isinstance(x, str) and not has_suffix(x) and not x in KEYWORDS)
 
 @cached
 def lex_adv_a_p(x):
