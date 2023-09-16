@@ -855,7 +855,7 @@ TYPE_ID_FNS = [
 
 def phrasal_ulf_type(x):
   """Hypothesizes the type of the given ULF formula."""
-  matched = [pair[1] for pair in TYPE_ID_FNS if pair[0]([x])]
+  matched = [pair[1] for pair in TYPE_ID_FNS if pair[0](x)]
   return matched if matched else ['unknown']
 
 
