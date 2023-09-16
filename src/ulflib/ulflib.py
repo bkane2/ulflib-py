@@ -1497,7 +1497,11 @@ def add_info_to_relativizer(curulf, srculf):
   
   Assumes there's at most one relativizer in `curulf`.
   """
-  origrel = rec_find_if(curulf, lex_rel_p)[0]
+  origrel = rec_find_if(curulf, lex_rel_p)
+  if not origrel:
+    return curulf
+  else:
+    origrel = origrel[0]
   # Right now, all we care about is plurality
   if plur_term_p(srculf) or plur_noun_p(srculf):
     replacement = ['plur-term', origrel]
