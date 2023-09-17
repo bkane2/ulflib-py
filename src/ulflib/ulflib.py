@@ -272,6 +272,8 @@ def lex_elided_p(x):
   if not atom(x):
     return False
   word, suffix = split_by_suffix(x)
+  if not len(word) >= 3:
+    return False
   return (word[0]=='{' and word[-1]=='}') or (word[0]=='{' and x[-1]=='}')
 
 @cached
