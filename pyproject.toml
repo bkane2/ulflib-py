@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ulflib"
-version = "0.0.11"
+version = "0.0.12"
 authors = [
   { name="Benjamin Kane", email="Ben.Kane@me.com" },
   { name="Gene Kim", email="genekim@usf.edu" }
@@ -16,6 +16,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "transduction >= 0.1.3",
+    "memoization >= 0.4.0",
 ]
 
 [project.urls]
