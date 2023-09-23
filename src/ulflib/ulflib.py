@@ -1411,7 +1411,7 @@ def suffix_check(x, suffix):
 def split_by_suffix(x):
   """Split a symbol by its suffix."""
   if not isinstance(x, str):
-    return x
+    return x, ''
   if not '.' in x:
     return x, ''
   else:
