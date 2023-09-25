@@ -39,6 +39,7 @@ def isquote(s):
 	"""Check if a given input is a quoted expression."""
 	return isinstance(s, str) and len(s) >= 2 and s[0] == '"' and s[-1] == '"'
 
+
 def rec_replace(old, new, lst):
 	"""Recursively replace some old value with a new value throughout a list."""
 	if lst == old:

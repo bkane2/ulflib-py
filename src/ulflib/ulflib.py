@@ -3,7 +3,7 @@
 from transduction import tt
 from memoization import cached
 
-from ulflib.util import atom, listp, cons, subst, rec_find_if
+from ulflib.util import atom, listp, cons, subst, isquote, rec_find_if
 
 # ``````````````````````````````````````
 # TT Lexical Patterns
@@ -1414,16 +1414,17 @@ def split_by_suffix(x):
     return x, ''
   if not '.' in x:
     return x, ''
+  if isquote(x):
+    return x, ''
   else:
-    return x.split('.')
+    split = x.split('.')
+    return '.'.join(split[:-1]), split[-1]
 
 
 def has_suffix(x):
   """Check if a symbol has a suffix."""
-  if not isinstance(x, str):
-    return False
-  else:
-    return len(x.split('.')) == 2
+  _, suffix = split_by_suffix(x)
+  return True if suffix else False
 
 
 def strip_suffix(str):
