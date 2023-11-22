@@ -11,7 +11,7 @@ from ulflib.util import atom, listp, cons, subst, isquote, rec_find_if
 
 
 
-TENSE = ['past', 'pres', 'cf']
+TENSE = ['past', 'pres', 'futr', 'cf']
 ASPECT = ['perf', 'prog']
 PASSIVIZER = ['pasv']
 PLURALIZER = ['plur']
