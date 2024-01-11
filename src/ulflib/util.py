@@ -77,8 +77,13 @@ def escaped_symbol_p(s):
 
 
 def symbolp(s):
-	"""Check if a given variable is a "symbol" (i.e., a string)."""
-	return isinstance(s, str)
+	"""Check if a given object is a "symbol" (i.e., a string)."""
+	return isinstance(s, str) and s
+
+
+def variablep(s):
+	"""Check if a given object is a variable, i.e., a symbol starting with '?'."""
+	return symbolp(s) and s[0] == '?'
 
 
 def listp(lst):
@@ -146,6 +151,16 @@ def flatten(lst):
 		return [lst]
 	else:
 		return append([flatten(x) for x in lst])
+	
+
+def flatten_singletons(lst):
+	"""Flatten all singleton elements in a list."""
+	if atom(lst):
+		return lst
+	elif len(lst) == 1:
+		return lst[0]
+	else:
+		return [flatten_singletons(x) for x in lst]
 	
 
 def remove_duplicates(lst, order=False):
@@ -272,3 +287,68 @@ def rec_find_if(lst, cndfn):
 	"""Return subexpressions in a tree that satisfy `cndfn`."""
 	_, categories = extract_category(lst, cndfn)
 	return categories
+
+
+def occurs_in(atm, expr):
+  """Check if `atm` occurs anywhere in, or is part of, `expr`.
+  
+  Notes
+  -----
+  Here "part of" is inclusively understood, i.e., not only list elements of a list (& its parts)
+  are parts of it, but also its cdr, cddr, etc.
+  """
+  if atm == expr:
+    return True
+  elif atom(expr):
+    return False
+  else:
+    return occurs_in(atm, expr[0]) or occurs_in(atm, expr[1:])
+	
+
+def occurs_properly_in(xp, expr):
+	"""Check if `xp` occurs as a proper part of `expr`."""
+	if xp == expr:
+		return False
+	elif atom(expr):
+		return False
+	else:
+		return any([xp == xpr or occurs_properly_in(xp, xpr) for xpr in expr])
+	
+
+def variables_in(expr):
+	"""Return a list of symbolic atoms in `expr`."""
+	if not expr:
+		return []
+	elif variablep(expr):
+		return [expr]
+	elif atom(expr):
+		return []
+	else:
+		return variables_in(expr[0]) + variables_in(expr[1:])
+	
+
+def get_numeric_suffix(atm):
+	"""Get the numeric suffix of a symbol (or None if it doesn't have one)."""
+	pattern = r"\d+$"
+	match = re.search(pattern, atm)
+	return match[0] if match else None
+	
+
+def new_var(expr):
+	"""Generate a new variable that doesn't occur in `expr`.
+	
+	Notes
+	-----
+	TODO: ultimately it may be better to maintain a global symbol table.
+	"""
+	if not expr:
+		return '?x'
+	symbols = variables_in(expr)
+	if not symbols:
+		return '?x'
+	for s in symbols:
+		suffix = get_numeric_suffix(s)
+		new = s + '1' if not suffix else s + str(int(suffix)+1)
+		if new not in symbols:
+			return new
+		

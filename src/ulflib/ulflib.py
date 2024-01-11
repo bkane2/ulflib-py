@@ -52,7 +52,9 @@ REL_VAR = ['*s', '*ref']
 SUB_VAR = ['*h', '*p', '*qt']
 HOLE_VARS = REL_VAR + SUB_VAR
 
-KEYWORDS = OPERATORS + MACROS + HOLE_VARS
+LAMBDA = [':l']
+
+KEYWORDS = OPERATORS + MACROS + HOLE_VARS + LAMBDA
 SURFACE_KEYWORDS = ['that', 'not', 'and', 'or', 'to', 'most', 'some', 'all', 'every', 'whether', 'if']
 
 
@@ -122,6 +124,10 @@ def lex_mod_p(x):
 @cached
 def lex_rel_p(x):
   return suffix_check(x, 'REL')
+
+@cached
+def lex_var_p(x):
+  return atom(x) and x[0] in ['?', '^']
 
 @cached
 def lex_det_p(x):
@@ -268,6 +274,10 @@ def lex_comma_p(x):
   return x == ','
 
 @cached
+def lex_neg_p(x):
+  return x in NEGATION or x == 'not.adv-s'
+
+@cached
 def lex_elided_p(x):
   if not atom(x):
     return False
@@ -301,6 +311,7 @@ LEX_PREDS = [
   lex_mod_n_p,
   lex_mod_p,
   lex_rel_p,
+  lex_var_p,
   lex_det_p,
   lex_coord_p,
   lex_aux_s_p,
@@ -370,6 +381,8 @@ TT_NOUN = [
   ['!phrasal-sent-op-p', '!noun-p'],
   ['n+post', '!noun-p', '+postmod-p'],
   ['=', '!term-p'],
+  # Lambda abstract of n+preds
+  '!lambda-p',
   # Fall back if arguments not correctly analyzed
   ['n+preds', '+expr']
 ]
@@ -472,12 +485,18 @@ TT_P_ARG = [
   ['!lex-p-arg-p', '!pred-p'],
   ['!adv-s-p', '!p-arg-p']
 ]
+
+TT_DET_TERM = [
+  ['!det-p', '!noun-p'],
+  ['+det-term-p', '!lex-coord-p', '+det-term-p'],
+]
   
 TT_TERM = [
   '!lex-pronoun-p',
   '!lex-name-p',
   '!lex-number-p',
   '!lex-rel-p',
+  '!lex-var-p',
   ['!det-p', '!noun-p'],
   ['!lex-set-of-p', '+term-p'],
   ['+term-p', '!lex-coord-p', '+term-p'],
@@ -534,6 +553,8 @@ TT_PRED = [
   '!relativized-sent-p',
   ['sub', '!lex-rel-p', '!tensed-sent-p'],
   ['sub', '*lex-rel-p', '!tensed-sent-p'],
+  # Lambda abstract
+  '!lambda-p',
   # Fall back analysis
   ['!lex-rel-p', '!expr'],
   ['!phrasal-sent-op-p', '!pred-p'],
@@ -576,9 +597,9 @@ TT_SENT = [
   ['!term-p', '=', '!term-p'],
   ['!term-p', '!adj-p'],
   ['!term-p', '!noun-p'],
+  ['!term-p', '!pp-p'],
   '!lex-sent-p',
   ['?sent-mod-p', '!sent-p', '+sent-or-sent-mod-p'],
-  ['!sent-mod-p', '!sent-p'],
   '!lex-x-p',
   # Term substitution
   ['sub', '!term-p', '!sent-p']
@@ -619,6 +640,20 @@ TT_TENSED_SENT = [
   # Term substitution
   ['sub', '!term-p', '!tensed-sent-p']
 ]
+
+TT_VERBAL_SENT = [
+  ['!term-p', '!verb-p'],
+  ['+verbal-sent-p', '!lex-coord-p', '+verbal-sent-p'],
+  ['!sent-mod-p', '!verbal-sent-p'],
+  ['!verbal-sent-p', '!sent-mod-p'],
+  ['!adv-a-p', '!term-p', '!verb-p'],
+  ['!verbal-sent-p', '!sent-punct-p'],
+  ['?sent-mod-p', '!verbal-sent-p', '+sent-or-sent-mod-p'],
+  # Term substitution
+  ['sub', '!term-p', '!verbal-sent-p'],
+  # Assume a tensed sentence is a verbal sentence
+  '!tensed-sent-p'
+]
   
 TT_SENT_MOD = [
   ['!lex-coord-p', '!sent-or-tensed-sent-p'],
@@ -643,6 +678,18 @@ TT_VOC = [
   # Fall back
   ['voc', '!expr'],
   ['voc-0', '!expr']
+]
+
+TT_COORD = [
+  ['+expr', '!lex-coord-p', '+expr']
+]
+
+TT_COORD_SENT = [
+  ['+sent-p', '!lex-coord-p', '+sent-p']
+]
+
+TT_LAMBDA = [
+  [':l', '!atom', '!sent-p']
 ]
 
 
@@ -759,6 +806,10 @@ def tensed_sent_p(x):
   return match_any(x, TT_TENSED_SENT)
 
 @cached
+def verbal_sent_p(x):
+  return match_any(x, TT_VERBAL_SENT)
+
+@cached
 def sent_punct_p(x):
   return x in PUNCT or x in [[p] for p in PUNCT]
 
@@ -813,6 +864,22 @@ def p_arg_p(x):
 @cached
 def voc_p(x):
   return match_any(x, TT_VOC)
+
+@cached
+def det_term_p(x):
+  return match_any(x, TT_DET_TERM)
+
+@cached
+def coord_p(x):
+  return match_any(x, TT_COORD)
+
+@cached
+def coord_sent_p(x):
+  return match_any(x, TT_COORD_SENT)
+
+@cached
+def lambda_p(x):
+  return match_any(x, TT_LAMBDA)
 
 
 TYPE_ID_FNS = [
@@ -891,6 +958,7 @@ PHRASE_PREDS = [
   tensed_verb_p,
   sent_p,
   tensed_sent_p,
+  verbal_sent_p,
   sent_punct_p,
   sent_mod_p,
   ps_p,
@@ -905,6 +973,10 @@ PHRASE_PREDS = [
   relativized_sent_p,
   p_arg_p,
   voc_p,
+  det_term_p,
+  coord_p,
+  coord_sent_p,
+  lambda_p
 ]
 
 for pred in PHRASE_PREDS:
@@ -1023,6 +1095,42 @@ def sent_or_tensed_sent_p(x):
 
 
 @cached
+def modified_sent_p(x):
+  return listp(x) and len(x) == 2 and sent_mod_p(x[0]) and (sent_p(x[1]) or tensed_sent_p(x[1]))
+
+
+@cached
+def non_neg_modified_sent_p(x):
+  return listp(x) and len(x) == 2 and sent_mod_p(x[0]) and not lex_neg_p(x[0]) and (sent_p(x[1]) or tensed_sent_p(x[1]))
+
+
+@cached
+def neg_non_verbal_sent_p(x):
+  return listp(x) and len(x) == 2 and lex_neg_p(x[0]) and sent_p(x[1]) and not verbal_sent_p(x[1])
+
+
+@cached
+def premodified_verbal_sent_p(x):
+  return listp(x) and len(x) >= 2 and adv_p(x[0]) and verbal_sent_p(x[1])
+
+
+@cached
+def neg_sent_p(x):
+  return listp(x) and len(x) == 2 and lex_neg_p(x[0]) and sent_p(x[1])
+
+
+@cached
+def nonsubsective_premod_p(ulf):
+  # TODO
+  return False
+
+
+@cached
+def nonsubsective_premodified_verb_p(x):
+  return listp(x) and len(x) == 2 and nonsubsective_premod_p(x[0]) and verb_p(x[1])
+
+
+@cached
 def phrasal_sent_op_p(x):
   """Condition to check if an element is a filtered sentence-level operator.
   
@@ -1044,6 +1152,11 @@ def type_shifter_p(x):
           or mod_a_former_p(x)
           or advformer_p(x)
           or detformer_p(x))
+
+
+@cached
+def tense_or_aspect_marker_p(x):
+  return lex_tense_p(x) or lex_aspect_p(x) or prog_marker_p(x) or perf_marker_p(x)
 
 
 @cached
@@ -1085,8 +1198,16 @@ GEN_PREDS = [
   verb_or_tensed_verb_p,
   sent_or_sent_mod_p,
   sent_or_tensed_sent_p,
+  modified_sent_p,
+  non_neg_modified_sent_p,
+  neg_non_verbal_sent_p,
+  premodified_verbal_sent_p,
+  neg_sent_p,
+  nonsubsective_premod_p,
+  nonsubsective_premodified_verb_p,
   phrasal_sent_op_p,
   type_shifter_p,
+  tense_or_aspect_marker_p,
   prog_marker_p,
   perf_marker_p,
   aux_or_head_verb_p,

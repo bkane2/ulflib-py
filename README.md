@@ -242,3 +242,39 @@ apply_qt_attr_macro(ulf)
 apply_substitution_macros(ulf)
 """Apply all substitution macros: sub, rep, qt-attr."""
 ```
+
+
+### Scoping
+
+The functions within the `scoping` module can be used to scope tense, quantifiers, and coordinated expressions within a ULF formula:
+
+```python
+from ulflib import scoping
+scoping.scope(ulf)
+```
+
+If you wish to scope only a particular type of element (e.g., only tense), a list of keywords can be provided as an optional argument (where each member is `tense`, `quan`, or `coord`):
+
+```python
+from ulflib import scoping
+scoping.scope(ulf, types=['tense'])
+```
+
+Scoping relies on the following rules for determining whether an unscoped element is accessible within an
+embedding expression. To be accessible, the unscoped element must not be embedded by:
+
+1. A larger expression binding a variable occurring free in the unscoped element.
+2. A sentence modifier other than `not`.
+3. A nonsubsective predicate modifier (`not`, `nearly`, ...; however, past/pres generally escape from these contexts).
+4. An already scoped quantifier, or already scoped tense operator.
+5. An unscoped conjunction or disjunction of sub-expressions.
+6. A verbal sub-expression of the ulf, e.g., a subordinate or relative or conjoined verbal clause.
+
+We can recursively use these accessibility rules even when we're no longer looking at a wff -- e.g., if some *part* of a wff contains
+a verbal sub-wff, any unscoped elements in that sub-wff are inaccessible at the level of the wff; similarly for unscoped sub-wff
+conjunctions/disjunctions, and certain modified and already scoped elements. However, we need to distinguish top-level and embedded candidate extraction, because at the top level extraction of unscoped elements from a clause is *not* blocked.
+
+We don't extract definites or indefinites from scope islands. For definites, this is logically unnecessary (if they pick out
+some entity not dependent on variables of embedding quantifiers) and for indefinites we can "raise" them, if necessary, either by
+a physical transformation (including the possibility of removing an argument of a Skolem function, if we Skolemize) or by equating
+them to an external entity.
