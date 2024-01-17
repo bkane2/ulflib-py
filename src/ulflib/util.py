@@ -201,6 +201,41 @@ def substall(lst, replist):
 	return lst
 
 
+def rec_apply(lst, fn):
+	"""Apply a function to each atom of a (possibly nested) list recursively."""
+	def rec(x):
+		if atom(x):
+			return fn(x)
+		else:
+			return [rec(y) for y in x]
+	return rec(lst)
+
+
+def apply_all(x, fns, return_size=1):
+	"""Attempt to apply each fn in `fns` to `x` in series, returning the first that gives a non-null result.
+
+	If `return_size` > 1, then the outputs of each function are a tuple rather than single value; we assume the
+	first element of the tuple is the one to be checked for a result.
+	
+	If all give a null result, return `x`.
+	"""
+	for fn in fns:
+		if isinstance(x, dict):
+			y = fn(**x)
+		elif isinstance(x, tuple):
+			y = fn(*x)
+		else:
+			y = fn(x)
+		if return_size > 1:
+			if isinstance(y, tuple) and y[0] is not None:
+				return y
+		elif y is not None:
+			return y
+	if return_size > 1:
+		return tuple(x if i==0 else None for i in range(return_size))
+	return x 
+
+
 def get_keyword_contents(lst, keys):
 	"""Get the contents immediately following each keyword in `keys` from a list."""
 	return [e2 for (e1, e2) in zip(lst, lst[1:]+[None]) if e1 in keys and e2]
@@ -334,18 +369,27 @@ def get_numeric_suffix(atm):
 	return match[0] if match else None
 	
 
-def new_var(expr):
+def new_var(expr, base=None):
 	"""Generate a new variable that doesn't occur in `expr`.
+
+	If a base symbol is given, attempt to use that symbol as the base of the new variable name.
 	
 	Notes
 	-----
 	TODO: ultimately it may be better to maintain a global symbol table.
 	"""
 	if not expr:
-		return '?x'
+		return base if base else '?x'
 	symbols = variables_in(expr)
 	if not symbols:
-		return '?x'
+		return base if base else '?x'
+	if base:
+		if base not in symbols:
+			return base
+		for i in range(1,100):
+			new = base + str(i)
+			if new not in symbols:
+				return new
 	for s in symbols:
 		suffix = get_numeric_suffix(s)
 		new = s + '1' if not suffix else s + str(int(suffix)+1)

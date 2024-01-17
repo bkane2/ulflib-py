@@ -3,7 +3,7 @@
 from transduction import tt
 from memoization import cached
 
-from ulflib.util import atom, listp, cons, subst, isquote, rec_find_if
+from ulflib.util import atom, listp, cons, subst, isquote, rec_find_if, rec_apply
 
 # ``````````````````````````````````````
 # TT Lexical Patterns
@@ -432,6 +432,9 @@ TT_ADJ_POSTMOD = [
 TT_ADV_A = [
   '!lex-adv-a-p',
   ['adv-a', '!pred-p'],
+  ['adv-a', ['!mod-a-p', '!adv-a-p']],
+  # fallback
+  ['adv-a', '!expr'],
   # Below is not quite correct since some *.pq map to (adv-e ...), but for the sake
   # of syntax checking it doesn't matter.
   '!lex-pq-p',
@@ -441,25 +444,34 @@ TT_ADV_A = [
 TT_ADV_E = [
   '!lex-adv-e-p',
   ['adv-e', '!pred-p'],
-  ['+adv-e-p', '!lex-coord-p', '+adv-e-p']
+  ['adv-e', ['!mod-a-p', '!adv-e-p']],
+  ['+adv-e-p', '!lex-coord-p', '+adv-e-p'],
+  # fallback
+  ['adv-e', '!expr'],
 ]
 
 TT_ADV_S = [
   '!lex-adv-s-p',
   ['adv-s', '!pred-p'],
+  ['adv-s', ['!mod-a-p', '!adv-s-p']],
   ['+adv-s-p', '!lex-coord-p', '+adv-s-p'],
-  ['(', '+expr', ')']
+  ['(', '+expr', ')'],
+  # fallback
+  ['adv-s', '!expr'],
 ]
 
 TT_ADV_F = [
   '!lex-adv-f-p',
   ['adv-f', '!pred-p'],
-  ['+adv-f-p', '!lex-coord-p', '+adv-f-p']
+  ['adv-f', ['!mod-a-p', '!adv-f-p']],
+  ['+adv-f-p', '!lex-coord-p', '+adv-f-p'],
+  # fallback
+  ['adv-f', '!expr'],
 ]
 
-TT_MOD_A = [
+TT_MOD_A = [['adv-f', '!expr'],
   '!lex-mod-a-p',
-  ['mod-a', '!pred-p']
+  ['mod-a', '!pred-p'],
 ]
 
 TT_MOD_N = [
@@ -608,6 +620,8 @@ TT_SENT = [
 TT_TENSED_SENT = [
   # Simple sentence
   ['!term-p', '!tensed-verb-p'],
+  # Already-scoped sentence
+  ['!tense-or-aspect-marker-p', '!sent-p'],
   # Coordinated sentence
   ['+tensed-sent-p', '!lex-coord-p', '+tensed-sent-p'],
   ['!lex-coord-p', '!tensed-sent-p', '+tensed-sent-p'],
@@ -1185,6 +1199,21 @@ def invertible_verb_or_aux_p(x):
   return lex_invertible_verb_p(x) or aux_p(x)
 
 
+@cached
+def direct_sent_mod_stop_p(x):
+  return type_shifter_p(x) or tense_or_aspect_marker_p(x)
+
+
+@cached
+def arg_sent_mod_stop_p(x):
+  return lex_noun_or_np_postmod_macro_p(x) or x in SUB_MACRO
+
+
+@cached
+def sent_mod_stop_p(x):
+  return direct_sent_mod_stop_p(x) or arg_sent_mod_stop_p(x)
+
+
 GEN_PREDS = [
   plur_term_p,
   plur_partitive_p,
@@ -1212,7 +1241,10 @@ GEN_PREDS = [
   perf_marker_p,
   aux_or_head_verb_p,
   noun_or_adj_p,
-  invertible_verb_or_aux_p
+  invertible_verb_or_aux_p,
+  direct_sent_mod_stop_p,
+  arg_sent_mod_stop_p,
+  sent_mod_stop_p
 ]
 
 for pred in GEN_PREDS:
@@ -1793,3 +1825,13 @@ def make_explicit(token):
     return token
   
   return token.replace('{', '').replace('}', '')
+
+
+def make_all_explicit(ulf):
+  """Make all elided tokens in a ULF explicit."""
+  return rec_apply(ulf, make_explicit)
+
+
+def lower_all(ulf):
+  """Make all symbols lowercase."""
+  return rec_apply(ulf, lambda x: x.lower() if isinstance(x, str) else x)

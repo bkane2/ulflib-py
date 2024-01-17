@@ -6,6 +6,7 @@ from memoization import cached
 from ulflib.util import atom, variablep, listp, append, occurs_in, occurs_properly_in, subst, rec_remove, flatten_singletons, new_var
 from ulflib.ulflib import (det_term_p, coord_p, coord_sent_p, tensed_sent_p, nonsubsective_premodified_verb_p, sent_p, pred_p, verbal_sent_p,
                            neg_non_verbal_sent_p, neg_sent_p, non_neg_modified_sent_p, tense_or_aspect_marker_p, tensed_verb_p,
+                           tensed_sent_reifier_p, lex_ps_p,
                            premodified_verbal_sent_p, sent_or_tensed_sent_p, lambda_p, lex_function_p, find_vp_head, split_by_suffix)
 
 # ``````````````````````````````````````
@@ -111,7 +112,22 @@ def to_quantifier(det):
 
 
 def scope(ulf, types=DEFAULT_TYPES):
-  """TBC"""
+  """The top-level function for scoping a ULF expression.
+  
+  Parameters
+  ----------
+  ulf : s-expr
+    An "S-expression" (possibly nested lists of strings) representing an
+    unscoped logical form (ULF) formula.
+  types : list[str], optional
+    The types of categories to scope; currently supported are
+    ``tense``, ``quan``, and ``coord``.
+  
+  Returns
+  -------
+  s-expr
+    The scoped logical form.
+  """
   candidates = scoping_candidates(ulf)
 
   if not candidates:
@@ -287,11 +303,12 @@ def wide_scope_winner(unscoped_elements):
   
 
 def extract_tense(ulf):
-  """Extract the tense marker from a ulf.
-  """
+  """Extract the tense marker from a ulf (blocking on sentence-embedding operators)."""
   if tense_or_aspect_marker_p(ulf):
     return ulf
   elif atom(ulf):
+    return None
+  elif tensed_sent_reifier_p(ulf[0]) or lex_ps_p(ulf[0]):
     return None
   else:
     part1 = extract_tense(ulf[0])
@@ -299,6 +316,20 @@ def extract_tense(ulf):
       return part1
     else:
       return extract_tense(ulf[1:])
+    
+
+def remove_tense(tense, ulf):
+  """Recursively remove a given tense marker from a ulf (blocking on sentence-embedding operators)."""
+  new_lst = []
+  for e in ulf:
+    if e == tense:
+      continue
+    elif type(e) == list and not (tensed_sent_reifier_p(e[0]) or lex_ps_p(e[0])):
+      new_lst.append(remove_tense(tense, e))
+    else:
+      new_lst.append(e)
+
+  return new_lst
   
 
 def scope_pred(pred, types=DEFAULT_TYPES):
@@ -363,7 +394,7 @@ def scope_tense(expr, ulf, types=DEFAULT_TYPES):
   tense = extract_tense(expr)
   if not tense: # unexpected
     return ulf
-  sent = flatten_singletons(rec_remove(tense, expr))
+  sent = flatten_singletons(remove_tense(tense, expr))
   if expr == ulf:
     return scope([tense, sent], types=types)
   else:

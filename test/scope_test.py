@@ -34,7 +34,6 @@ class TestScoping:
     assert scoping.scope(ulf) == scoped
 
   def test_5(self):
-    ['n+preds', 'block.n', ['on.p', 'it.pro']]
     ulf = ['John.name', [['past', 'tell.v'], 'Mary.name',
                          ['that', ['he.pro', [['pres', 'go.v'], ['to.p', ['the.d',
                                                 [':l', '?x', [['?x', 'store.n'], 'and.cc', ['?x', ['near.p', ['the.d', 'corner.n']]]]]]]]]]]]
@@ -44,7 +43,7 @@ class TestScoping:
                                                             ['he.pro', ['go.v', ['to.p', '?x1']]]]]]]]]
     assert scoping.scope(ulf) == scoped
     
-
+    
 class TestOptionalKeywords():
   def test_1(self):
     ulf = ['John.name', [['past', 'tell.v'], 'Mary.name', ['that', ['he.pro', [['pres', 'go.v'], ['to.p', ['the.d', 'store.n']]]]]]]
