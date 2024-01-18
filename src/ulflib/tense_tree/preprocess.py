@@ -7,7 +7,8 @@ from memoization import cached
 
 from ulflib.util import atom, append, cons, flatten_singletons, listp, apply_all, new_var, variables_in
 from ulflib.ulflib import (direct_sent_mod_stop_p, arg_sent_mod_stop_p, sent_mod_stop_p, sent_mod_p, ps_p, make_all_explicit, lower_all, split_by_suffix,
-                            lex_adv_e_p, adv_e_p, lex_adv_f_p, adv_f_p, lex_number_p, pp_p, lex_pronoun_p, lex_det_p, adj_p, lex_adjective_p, lex_mod_n_p)
+                           apply_substitution_macros,
+                           lex_adv_e_p, adv_e_p, lex_adv_f_p, adv_f_p, lex_number_p, pp_p, lex_pronoun_p, lex_det_p, adj_p, lex_adjective_p, lex_mod_n_p)
 from ulflib import scoping
 from ulflib.tense_tree.temporal_lex import *
 
@@ -380,6 +381,7 @@ def expand_temporal_mods(ulf):
 def preprocess(ulf, is_scoped=False):
   """Preprocess a ulf, including scoping tense operators (if necessary) and lifting/expanding temporal modifiers."""
   ulf = make_all_explicit(lower_all(ulf))
+  ulf = apply_substitution_macros(ulf)
   ulf = uninvert_aux(ulf)
   if not is_scoped:
     ulf = scoping.scope(ulf, types=['tense'])
