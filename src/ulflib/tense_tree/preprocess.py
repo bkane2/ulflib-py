@@ -6,9 +6,10 @@ from transduction import tt
 from memoization import cached
 
 from ulflib.util import atom, append, cons, flatten_singletons, listp, apply_all, new_var, variables_in
-from ulflib.ulflib import (direct_sent_mod_stop_p, arg_sent_mod_stop_p, sent_mod_stop_p, sent_mod_p, ps_p, make_all_explicit, lower_all, split_by_suffix,
-                           apply_substitution_macros,
-                           lex_adv_e_p, adv_e_p, lex_adv_f_p, adv_f_p, lex_number_p, pp_p, lex_pronoun_p, lex_det_p, adj_p, lex_adjective_p, lex_mod_n_p)
+from ulflib.ulflib import (direct_sent_mod_stop_p, arg_sent_mod_stop_p, sent_mod_stop_p, sent_mod_p, ps_p, make_all_explicit, lower_all,
+                            split_by_suffix, apply_substitution_macros,
+                            lex_adv_e_p, adv_e_p, lex_adv_f_p, adv_f_p, lex_number_p, pp_p, lex_pronoun_p, lex_det_p, adj_p, lex_adjective_p,
+                            lex_mod_n_p, mod_a_p)
 from ulflib import scoping
 from ulflib.tense_tree.temporal_lex import *
 
@@ -77,11 +78,12 @@ def temp_location_adv(x, oldvars):
       ret = ['adv-e', ['during.p', ['the', var, [var, [adj, 'episode.n']]]]]
       newvars = [var]
   elif adv_e_adj(x):
-    lex_adj, _ = split_by_suffix(x[1])
-    if lex_adj in LOCATION_ADJ_MAP:
-      adj = LOCATION_ADJ_MAP[lex_adj]
-      ret = ['adv-e', ['during.p', ['the', var, [var, [adj, 'episode.n']]]]]
-      newvars = [var]
+    if lex_adjective_p(x[1]):
+      lex_adj, _ = split_by_suffix(x[1])
+      if lex_adj in LOCATION_ADJ_MAP:
+        adj = LOCATION_ADJ_MAP[lex_adj]
+        ret = ['adv-e', ['during.p', ['the', var, [var, [adj, 'episode.n']]]]]
+        newvars = [var]
   elif adv_e_pp(x):
     pp = x[1]
     lex_prep, _ = split_by_suffix(pp[0])
@@ -117,9 +119,16 @@ def temp_range_adv(x, oldvars):
       ret = ['adv-e', ['during.p', ['some', var, [var, [adj, 'episode.n']]]]]
       newvars = [var]
   elif adv_e_adj(x):
-    lex_adj, _ = split_by_suffix(x[1])
-    if lex_adj in RANGE_ADJ_MAP:
-      adj = RANGE_ADJ_MAP[lex_adj]
+    if lex_adjective_p(x[1]):
+      lex_adj, _ = split_by_suffix(x[1])
+      if lex_adj in RANGE_ADJ_MAP:
+        adj = RANGE_ADJ_MAP[lex_adj]
+        var = new_var(oldvars, base='?t')
+        ret = ['adv-e', ['during.p', ['some', var, [var, [adj, 'episode.n']]]]]
+        newvars = [var]
+    elif listp(x[1]) and mod_a_p(x[1][0]) and x[1][1] == 'ago.a':
+      adj = x[1]
+      var = new_var(oldvars, base='?t')
       ret = ['adv-e', ['during.p', ['some', var, [var, [adj, 'episode.n']]]]]
       newvars = [var]
   return ret, newvars
@@ -154,9 +163,10 @@ def count_adv(x, oldvars):
     if number_p(word):
       ret = ['adv-f', [str(to_number(word))+'.mod-n', ['plur', 'episode.n']]]
   elif adv_f_adj(x):
-    lex_adj, _ = split_by_suffix(x[1])
-    if number_p(lex_adj):
-      ret = ['adv-f', [str(to_number(lex_adj))+'.mod-n', ['plur', 'episode.n']]]
+    if lex_adjective_p(x[1]):
+      lex_adj, _ = split_by_suffix(x[1])
+      if number_p(lex_adj):
+        ret = ['adv-f', [str(to_number(lex_adj))+'.mod-n', ['plur', 'episode.n']]]
   elif adv_f_pp(x):
     pp = x[1]
     lex_prep, _ = split_by_suffix(pp[0])
@@ -182,10 +192,11 @@ def frequency_adv(x, oldvars):
       var = new_var(oldvars, base='?t')
       ret = ['adv-f', [['attr', adj], ['plur', 'episode.n']]]
   elif adv_f_adj(x):
-    lex_adj, _ = split_by_suffix(x[1])
-    if lex_adj in FREQUENCY_ADJ_MAP:
-      adj = FREQUENCY_ADJ_MAP[lex_adj]
-      ret = ['adv-f', [['attr', adj], ['plur', 'episode.n']]]
+    if lex_adjective_p(x[1]):
+      lex_adj, _ = split_by_suffix(x[1])
+      if lex_adj in FREQUENCY_ADJ_MAP:
+        adj = FREQUENCY_ADJ_MAP[lex_adj]
+        ret = ['adv-f', [['attr', adj], ['plur', 'episode.n']]]
   elif adv_f_pp(x):
     pp = x[1]
     lex_prep, _ = split_by_suffix(pp[0])
@@ -239,15 +250,16 @@ def recurrence_adv(x, oldvars):
                                       ['exists', var_e, [[var_e, 'member-of.p', var_s], 'and.cc',
                                                         [var_e, 'during.p', var_t]]]]]]
   elif adv_f_adj(x):
-    lex_adj, _ = split_by_suffix(x[1])
-    if lex_adj in RECURRENCE_ADJ_MAP:
-      np = RECURRENCE_ADJ_MAP[lex_adj]
-      var_s = new_var(oldvars, base='?s')
-      var_t = new_var(oldvars+[var_s], base='?t')
-      var_e = new_var(oldvars+[var_s, var_t], base='?e')
-      ret = ['adv-f', [':l', var_s, ['all', var_t, [var_t, np],
-                                      ['exists', var_e, [[var_e, 'member-of.p', var_s], 'and.cc',
-                                                        [var_e, 'during.p', var_t]]]]]]
+    if lex_adjective_p(x[1]):
+      lex_adj, _ = split_by_suffix(x[1])
+      if lex_adj in RECURRENCE_ADJ_MAP:
+        np = RECURRENCE_ADJ_MAP[lex_adj]
+        var_s = new_var(oldvars, base='?s')
+        var_t = new_var(oldvars+[var_s], base='?t')
+        var_e = new_var(oldvars+[var_s, var_t], base='?e')
+        ret = ['adv-f', [':l', var_s, ['all', var_t, [var_t, np],
+                                        ['exists', var_e, [[var_e, 'member-of.p', var_s], 'and.cc',
+                                                          [var_e, 'during.p', var_t]]]]]]
   elif adv_f_pp(x):
     pp = x[1]
     lex_prep, _ = split_by_suffix(pp[0])

@@ -123,6 +123,12 @@ class TestPreprocessingExpandTemporalMods:
     ulf1 = ['past', [['adv-e', ['during.p', ['some', '?t', ['?t', ['previous.a', 'episode.n']]]]], ['mary', 'leave.v']]]
     assert equal_with_variables(expand_temporal_mods(ulf), ulf1)
 
+    ulf = ['past', [['adv-e', [['mod-a', ['by.p', ['1.d', 'move.n']]], 'ago.a']],
+                    [['which.d', ['plur', 'block.n']], ['be.v', ['near.p', ['the.d', ['mercedes', 'block.n']]]]]]]
+    ulf1 = ['past', [['adv-e', ['during.p', ['some', '?t', ['?t', [[['mod-a', ['by.p', ['1.d', 'move.n']]], 'ago.a'], 'episode.n']]]]],
+                    [['which.d', ['plur', 'block.n']], ['be.v', ['near.p', ['the.d', ['mercedes', 'block.n']]]]]]]
+    assert equal_with_variables(expand_temporal_mods(ulf), ulf1)
+
 
   def test_duration(self):
     ulf = ['past', [['adv-e', ['for.p', ['two.d', ['plur', 'hour.n']]]], ['john', 'sleep.v']]]
