@@ -133,7 +133,7 @@ class TenseTree:
         else:
           return [op, deindex_recur(ulf[1], emb_node, focus)]
         
-        if new_focus.last_episode():
+        if new_focus.last_episode() and new_focus.last_episode() != e:
           restrictor = [restrictor, AND, [new_focus.last_episode(), ORIENTS, e]]
 
         nucleus = [deindex_recur(ulf[1], emb_node, new_focus.add_episode(e)), CH, e]
