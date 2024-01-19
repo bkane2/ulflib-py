@@ -82,6 +82,7 @@ def temp_location_adv(x, oldvars):
       lex_adj, _ = split_by_suffix(x[1])
       if lex_adj in LOCATION_ADJ_MAP:
         adj = LOCATION_ADJ_MAP[lex_adj]
+        var = new_var(oldvars, base='?t')
         ret = ['adv-e', ['during.p', ['the', var, [var, [adj, 'episode.n']]]]]
         newvars = [var]
   elif adv_e_pp(x):
