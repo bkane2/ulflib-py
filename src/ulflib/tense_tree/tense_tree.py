@@ -175,21 +175,22 @@ class TenseTree:
     if isinstance(ulf, str):
       ulf = parse_s_expr(ulf)
 
-    mood = get_mood(ulf)
     ulf = preprocess(ulf, is_scoped=is_scoped)
+    focus = self.root
+
+    if self.disable_speech_acts or not speech_act:
+      return deindex_recur(ulf, focus, focus)
+
+    mood = get_mood(ulf)
     u = self.new_utt_var()
     now = self.new_now()
     restrictor = [u, SAME_TIME, now]
-    focus = self.root
 
     # The utterance episode is assumed to be just after the preceeding episode in focus
     if focus.last_episode():
       restrictor = [restrictor, AND, [u, JUST_AFTER, focus.last_episode()]]
 
     embedded = deindex_recur(ulf, focus, focus.add_episode(u).move_embedded_cur())
-
-    if self.disable_speech_acts or not speech_act:
-      return embedded
 
     # Form speech act logical form depending on mood of ULF
     if mood == MOOD_DECL:
