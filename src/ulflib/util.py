@@ -229,10 +229,10 @@ def apply_all(x, fns, return_size=1):
 		if return_size > 1:
 			if isinstance(y, tuple) and y[0] is not None:
 				return y
-		elif y is not None:
+		elif return_size == 1 and y is not None:
 			return y
 	if return_size > 1:
-		return tuple(x if i==0 else None for i in range(return_size))
+		return tuple(x[0] if i==0 else None for i in range(return_size))
 	return x 
 
 

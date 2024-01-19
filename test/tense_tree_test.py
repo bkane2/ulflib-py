@@ -209,8 +209,10 @@ class TestPreprocessingExpandTemporalMods:
 
 tree = TenseTree(disable_speech_acts=True)
 # ulf = ['mary', [['past', 'leave.v'], ['adv-e', ['before.p', ['this.d', 'wednesday.n']]]]]
-ulf = ['past', ['frequently.adv-f', ['john', ['call.v', 'mary']]]]
-print(tree.deindex(ulf))
-# print(preprocess(ulf))
+# ulf = ['past', ['frequently.adv-f', ['john', ['call.v', 'mary']]]]
+# ulf = ['sub', ['at.p', ['what.d', 'place.n']], [['the.d', ['|Toyota|', 'block.n']], [['pres', 'be.v'], '*h', ['adv-e', 'now.a']]]]
+ulf = ['sub', [['nquan', ['how.mod-a', 'many.a']], ['plur', 'block.n']], [['past', 'do.aux-s'], 'you.pro', [['adv-e', 'ever.a'], ['move.v', '*h', ['adv-e', ['since.p', ['the.d', ['plur', 'begin.n']]]]]]]]
+# print(tree.deindex(ulf))
+print(preprocess(ulf))
 # print(scoping.scope(ulf))
 

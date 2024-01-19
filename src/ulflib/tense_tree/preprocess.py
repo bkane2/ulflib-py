@@ -62,6 +62,11 @@ def indexical_adv(x, oldvars):
     word, _ = split_by_suffix(x)
     if word in INDEXICAL_TIMES:
       ret = ['adv-e', ['during.p', '^'+word]]
+  elif adv_e_adj(x):
+    if lex_adjective_p(x[1]):
+      lex_adj, _ = split_by_suffix(x[1])
+      if lex_adj in INDEXICAL_TIMES:
+        ret = ['adv-e', ['during.p', '^'+lex_adj]]
   return ret, newvars
 
 
